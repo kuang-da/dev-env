@@ -1,0 +1,81 @@
+# base image maintained by the NVIDIA CUDA Installer Team - https://hub.docker.com/r/nvidia/cuda/
+# FROM nvidia/cuda:10.2-cudnn7-devel-ubuntu18.04
+FROM nvidia/cuda:12.1.0-devel-ubuntu22.04
+
+# install os packages
+RUN apt-get -y update
+RUN apt-get install --no-install-recommends --yes \
+        unzip \
+        g++ \
+        vim \
+        wget \
+        ca-certificates \
+        git \
+        libudunits2-dev \
+        imagemagick
+RUN apt-get clean
+RUN rm -rf /var/lib/apt/lists/*
+
+# see http://bugs.python.org/issue19846
+ENV LANG C.UTF-8
+
+# install miniconda3 - https://docs.conda.io/projects/continuumio-conda/en/latest/user-guide/install/index.html
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh \
+    && /bin/bash /tmp/miniconda.sh -b -p /opt/conda \
+    && rm /tmp/miniconda.sh
+RUN /opt/conda/condabin/conda init bash
+RUN /opt/conda/condabin/conda install mamba -c conda-forge --yes
+
+# create Python environment from environment.yml
+COPY py_environment.yml /tmp/
+RUN /opt/conda/bin/mamba env create -f /tmp/py_environment.yml \
+    && /opt/conda/bin/mamba clean --all --yes --quiet
+ENV PATH /opt/conda/envs/py_env/bin:/opt/conda/bin:$PATH
+
+# create new conda environment for R from r_environment.yml
+COPY r_environment.yml /tmp/
+RUN /opt/conda/bin/mamba env create -f /tmp/r_environment.yml \
+    && /opt/conda/bin/mamba clean --all --yes --quiet
+
+COPY install_seurat.sh /install_seurat.sh
+RUN chmod +x /install_seurat.sh && /install_seurat.sh
+
+COPY install_others.sh /install_others.sh
+RUN chmod +x /install_others.sh && /install_others.sh
+
+ENV PATH /usr/lib/rstudio-server/bin/:${PATH}
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gdebi-core \
+    nano
+
+WORKDIR /tmp
+RUN wget https://download2.rstudio.org/server/jammy/amd64/rstudio-server-2023.12.1-402-amd64.deb
+RUN gdebi --non-interactive rstudio-server-2023.12.1-402-amd64.deb
+RUN mkdir -p /etc/rstudio && \
+    echo "rsession-which-r=/opt/conda/envs/r_env/bin/R" >> /etc/rstudio/rserver.conf && \
+    echo "www-port=9020" >> /etc/rstudio/rserver.conf && \
+    echo "copilot-enabled=1" >> /etc/rstudio/rsession.conf
+WORKDIR /
+
+# Setting up a non-root user 
+ARG USERNAME=kuangda
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+ARG USER_PASSWORD=kuangda
+
+# Create the user
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
+    #
+    # [Optional] Add sudo support. Omit if you don't need to install software after connecting.
+    && apt-get update \
+    && apt-get install -y sudo \
+    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME \
+    #
+    # Set user password
+    && echo "$USERNAME:$USER_PASSWORD" | chpasswd
+
+# RUN echo "source activate cell2loc_env" >> /home/kuangda/.bashrc
+RUN /opt/conda/condabin/conda init bash
+RUN echo "options(download.file.method = 'wget')" >> /home/kuangda/.Rprofile

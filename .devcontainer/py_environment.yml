@@ -1,0 +1,37 @@
+name: py_env
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.11
+  - pip
+  - pytest
+  - numpy
+  - pandas
+  - jupyter
+  - ipykernel
+  - leidenalg
+  - python-igraph
+  - nose
+  - scanpy
+  - scipy
+  - louvain
+  - hyperopt
+  - loompy
+  - cmake
+  - dill
+  - ipython
+  - bbknn
+  - seaborn
+  - matplotlib
+  - request
+  - cython
+  - snakemake
+  - pip:
+      - scvi-tools
+      - torch
+      - torchvision
+      - torchaudio
+      - tensorboard
+      - torch-tb-profiler
