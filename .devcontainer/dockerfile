@@ -3,8 +3,7 @@
 FROM nvidia/cuda:12.1.0-devel-ubuntu22.04
 
 # install os packages
-RUN apt-get -y update
-RUN apt-get install --no-install-recommends --yes \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         unzip \
         g++ \
         vim \
@@ -12,9 +11,10 @@ RUN apt-get install --no-install-recommends --yes \
         ca-certificates \
         git \
         libudunits2-dev \
-        imagemagick
-RUN apt-get clean
-RUN rm -rf /var/lib/apt/lists/*
+        imagemagick \
+        libgl1 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # see http://bugs.python.org/issue19846
 ENV LANG C.UTF-8

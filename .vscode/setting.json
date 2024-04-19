@@ -1,0 +1,8 @@
+{
+    "black-formatter.interpreter": [
+        "/opt/conda/envs/py_env/bin/python"
+    ],
+    "r.bracketedPaste": true,
+    "r.rpath.linux": "/opt/conda/envs/r_env/bin/R",
+    "r.rterm.linux": "/opt/conda/envs/r_env/bin/radian"
+}
