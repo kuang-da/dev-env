@@ -8,10 +8,12 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
         g++ \
         vim \
         wget \
+        neofetch \
         ca-certificates \
         git \
         libudunits2-dev \
         imagemagick \
+        less \
         libgl1 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
