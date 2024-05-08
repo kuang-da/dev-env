@@ -35,3 +35,4 @@ dependencies:
       - torchaudio
       - tensorboard
       - torch-tb-profiler
+      - ruamel.yaml
