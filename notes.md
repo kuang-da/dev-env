@@ -15,3 +15,16 @@ git push origin :refs/tags/v1.0
 git tag v1.0 
 git push origin v1.0
 ```
+
+Remote session tools
+
+```bash
+docker exec -it --user kuangda quirky_leavitt bash
+screen -S batch_nrom
+screen -ls
+screen -r test-screen
+
+tmux new -s batch_norm
+tmux ls
+tmux attach -t batch_norm
+```
